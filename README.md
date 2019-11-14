@@ -1,0 +1,1 @@
+realization of twitch communities

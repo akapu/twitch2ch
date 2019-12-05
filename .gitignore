@@ -1,0 +1,7 @@
+.gcloudignore
+__pycache__/
+app.yaml
+credentials.json
+instance/
+set_credentials.sh
+venv/

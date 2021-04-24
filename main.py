@@ -19,10 +19,12 @@ def short(str):
 app.jinja_env.filters['short'] = short
 
 streams = {}
+token = {}
 
 @app.route('/')
 def index():
-    return render_template("index.html", logins=get_logins(), streams=get_streams().get('data', []))
+    return render_template("index.html", logins=get_logins(),
+            streams=get_streams().get('data', []))
 
 def get_logins():
     
@@ -38,7 +40,9 @@ def get_streams():
         return streams
     
     logins = get_logins()
-    headers = {"Client-ID": app.config['TWITCH_CLIENT_ID']}
+
+    headers = {'Client-ID': app.config['TWITCH_CLIENT_ID'],
+            'Authorization': auth()}
     params = {"user_login": logins}
     
     streams_twitch = requests.get('https://api.twitch.tv/helix/streams',
@@ -67,8 +71,9 @@ def get_games(games_ids):
     
     if not games_ids:
         return {}
-    
-    headers = {'Client-ID': app.config['TWITCH_CLIENT_ID']}
+
+    headers = {'Client-ID': app.config['TWITCH_CLIENT_ID'],
+            'Authorization': auth()}
     params = {'id': games_ids}
     games_twitch = requests.get('https://api.twitch.tv/helix/games',
                      params=params, headers=headers)
@@ -82,3 +87,22 @@ def get_games(games_ids):
     	games[game['id']] = game['name']
         
     return games
+
+def auth():
+    global token
+
+    if token:
+        return f"{'B' + token['token_type'][1:]} {token['access_token']}"
+
+    params = {'client_id': app.config['TWITCH_CLIENT_ID'],
+            'client_secret': app.config['TWITCH_SECRET'],
+            'grant_type': 'client_credentials'}
+    token_answ = requests.post("https://id.twitch.tv/oauth2/token", data=params)
+
+    if token_answ.status_code != requests.codes.ok:
+        return ''
+
+    token = token_answ.json()
+
+    return f"{'B' + token['token_type'][1:]} {token['access_token']}"
+

@@ -3,5 +3,5 @@ __pycache__/
 app.yaml
 credentials.json
 instance/
-set_credentials.sh
+set_envs.sh
 venv/
